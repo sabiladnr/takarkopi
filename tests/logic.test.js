@@ -13,6 +13,7 @@ import {
   calculateDailyPrep,
   getExpiryStatus,
   filterIngredients,
+  sortIngredients,
   normalizeWeatherId,
   normalizeEventId,
   expiryStatus,
@@ -24,6 +25,8 @@ import {
   isValidISODate,
   toISODate,
   addDays,
+  isValidWhatsAppNumber,
+  buildWhatsAppUrl,
 } from '../src/predictor.js';
 import {
   validateIngredient,
@@ -33,6 +36,7 @@ import {
   parseImport,
   demoIngredients,
   serializeExport,
+  SUPPLIER_WHATSAPP_NUMBER,
 } from '../src/ingredients.js';
 
 const TODAY = new Date(2026, 10, 16); // 16 Nov 2026
@@ -147,6 +151,41 @@ test('filterIngredients: query, kategori, dan onlyShortage', () => {
     [],
   );
   assert.equal(filterIngredients(items, { query: 'tidak-ada' }).length, 0);
+});
+
+test('filterIngredients: mendukung sort "fifo", "shortage", dan "name-asc"', () => {
+  const list = [
+    { id: '1', nama: 'Z-Susu', tanggalKedaluwarsa: '2026-11-20', stokSaatIni: 100, pemakaianDasar: 500 },
+    { id: '2', nama: 'A-Kopi', tanggalKedaluwarsa: '2026-11-17', stokSaatIni: 200, pemakaianDasar: 300 },
+    { id: '3', nama: 'M-Sirup', tanggalKedaluwarsa: '2026-11-25', stokSaatIni: 50, pemakaianDasar: 950 },
+  ];
+
+  // Default fifo -> ED terdekat dulu: 2 (17 Nov), 1 (20 Nov), 3 (25 Nov)
+  assert.deepEqual(filterIngredients(list).map((x) => x.id), ['2', '1', '3']);
+  assert.deepEqual(filterIngredients(list, { sort: 'fifo' }).map((x) => x.id), ['2', '1', '3']);
+
+  // shortage -> kekurangan terbanyak dulu: 3 (kurang 900), 1 (kurang 400), 2 (kurang 100)
+  assert.deepEqual(filterIngredients(list, { sort: 'shortage' }).map((x) => x.id), ['3', '1', '2']);
+
+  // name-asc -> A-Z: 2 (A-Kopi), 3 (M-Sirup), 1 (Z-Susu)
+  assert.deepEqual(filterIngredients(list, { sort: 'name-asc' }).map((x) => x.id), ['2', '3', '1']);
+});
+
+test('WhatsApp Restock: konstanta SUPPLIER_WHATSAPP_NUMBER dan buildWhatsAppUrl', () => {
+  assert.equal(SUPPLIER_WHATSAPP_NUMBER, '6281234567890');
+  assert.equal(isValidWhatsAppNumber(SUPPLIER_WHATSAPP_NUMBER), true);
+
+  const item = { nama: 'Espresso Blend', satuan: 'gram' };
+  const url = buildWhatsAppUrl(SUPPLIER_WHATSAPP_NUMBER, item, 1500);
+  assert.ok(url.startsWith('https://wa.me/6281234567890?text='));
+  assert.ok(url.includes(encodeURIComponent('Espresso Blend')));
+  assert.ok(url.includes(encodeURIComponent('1.500 gram')));
+
+  // Nomor tidak valid
+  assert.equal(buildWhatsAppUrl('081234567890', item, 100), '');
+  assert.equal(buildWhatsAppUrl('+6281234567890', item, 100), '');
+  assert.equal(buildWhatsAppUrl('abc', item, 100), '');
+  assert.equal(buildWhatsAppUrl('', item, 100), '');
 });
 
 /* ----------------------------- checklist ----------------------------- */

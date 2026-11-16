@@ -567,29 +567,30 @@ export function sortChecklistItems(items, sort = 'fifo') {
 
 /**
  * Validasi nomor WhatsApp format internasional.
- * Hanya digit (pemisah seperti spasi/`-`/`+` diabaikan), panjang wajar 8–15 digit,
- * tidak diawali `0` lokal, dan harus diawali kode negara (mis. `62`).
+ * Hanya digit, panjang wajar 8–15 digit, tidak diawali `0` lokal,
+ * dan harus diawali kode negara (mis. `62`).
  * @param {unknown} nomor
  * @returns {boolean}
  */
 export function isValidWhatsAppNumber(nomor) {
-  const digits = String(nomor ?? '').replace(/[^\d]/g, '');
-  if (digits.length < 8 || digits.length > 15) return false;
-  if (digits.startsWith('0')) return false;
+  if (typeof nomor !== 'string' && typeof nomor !== 'number') return false;
+  const str = String(nomor).trim();
+  if (!/^\d{8,15}$/.test(str)) return false;
+  if (str.startsWith('0')) return false;
   return true;
 }
 
 /**
  * Susun URL WhatsApp (wa.me) untuk memesan restock sebuah bahan (fungsi murni).
- * @param {string} nomor nomor tujuan format internasional (mis. "6281234567890")
+ * @param {string|number} nomor nomor tujuan format internasional (mis. "6281234567890")
  * @param {object} item bahan (butuh `nama`, opsional `satuan`)
  * @param {number} kekurangan jumlah kekurangan stok
  * @returns {string} URL `https://wa.me/<nomor>?text=<pesan>` atau '' bila nomor tidak valid.
  */
 export function buildWhatsAppUrl(nomor, item, kekurangan) {
-  const digits = String(nomor ?? '').replace(/[^\d]/g, '');
-  if (!isValidWhatsAppNumber(digits)) return '';
+  if (!isValidWhatsAppNumber(nomor)) return '';
 
+  const digits = String(nomor).trim();
   const nama = String(item?.nama ?? 'bahan');
   const satuan = item?.satuan ? ` ${item.satuan}` : '';
   const jumlah = formatNumber(Math.max(0, Number(kekurangan) || 0));
