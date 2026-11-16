@@ -1,4 +1,4 @@
-﻿name: Deploy TakarKopi to GitHub Pages
+﻿﻿name: Deploy TakarKopi to GitHub Pages
 on:
   push:
     branches: [main]

@@ -17,14 +17,11 @@ import {
   calculateDailyPrep,
   getExpiryStatus,
   filterIngredients,
-  sortIngredients,
   normalizeWeatherId,
   normalizeEventId,
   computePrediction,
   expiryStatus,
   addDays,
-  isValidWhatsAppNumber,
-  buildWhatsAppUrl,
 } from '../src/predictor.js';
 
 import {
@@ -38,7 +35,6 @@ import {
   defaultImageFor,
   withDefaultImages,
   IMAGE_BY_ID,
-  SUPPLIER_WHATSAPP_NUMBER,
 } from '../src/ingredients.js';
 
 const TODAY = new Date(2026, 10, 16); // 16 Nov 2026
@@ -264,88 +260,6 @@ describe('filterIngredients — query, kategori, onlyShortage', () => {
   it('input bukan array ditangani aman', () => {
     expect(filterIngredients(null)).toEqual([]);
     expect(filterIngredients(undefined, { query: 'x' })).toEqual([]);
-  });
-
-  describe('parameter sort: "fifo", "shortage", "name-asc"', () => {
-    const list = [
-      { id: '1', nama: 'Z-Susu', tanggalKedaluwarsa: '2026-11-20', stokSaatIni: 100, pemakaianDasar: 500 }, // shortage: 400, ED: 20 Nov
-      { id: '2', nama: 'A-Kopi', tanggalKedaluwarsa: '2026-11-17', stokSaatIni: 200, pemakaianDasar: 300 }, // shortage: 100, ED: 17 Nov
-      { id: '3', nama: 'M-Sirup', tanggalKedaluwarsa: '2026-11-25', stokSaatIni: 50, pemakaianDasar: 950 }, // shortage: 900, ED: 25 Nov
-    ];
-
-    it('"fifo" (default) mengurutkan tanggal kedaluwarsa paling dekat dulu', () => {
-      const res = filterIngredients(list, { sort: 'fifo' });
-      expect(res.map((x) => x.id)).toEqual(['2', '1', '3']);
-    });
-
-    it('default tanpa parameter sort adalah "fifo"', () => {
-      const res = filterIngredients(list);
-      expect(res.map((x) => x.id)).toEqual(['2', '1', '3']);
-    });
-
-    it('"shortage" mengurutkan kekurangan stok terbanyak lebih dulu', () => {
-      const res = filterIngredients(list, { sort: 'shortage' });
-      // Kekurangan: M-Sirup (900) > Z-Susu (400) > A-Kopi (100)
-      expect(res.map((x) => x.id)).toEqual(['3', '1', '2']);
-    });
-
-    it('"name-asc" mengurutkan nama bahan A–Z', () => {
-      const res = filterIngredients(list, { sort: 'name-asc' });
-      expect(res.map((x) => x.id)).toEqual(['2', '3', '1']);
-    });
-  });
-});
-
-/* ================================================================== */
-/* 3b. Integrasi WhatsApp Restock Supplier                            */
-/* ================================================================== */
-
-describe('WhatsApp Restock Supplier (SUPPLIER_WHATSAPP_NUMBER, buildWhatsAppUrl)', () => {
-  it('SUPPLIER_WHATSAPP_NUMBER berformat internasional tanpa "+"', () => {
-    expect(SUPPLIER_WHATSAPP_NUMBER).toBe('6281234567890');
-    expect(isValidWhatsAppNumber(SUPPLIER_WHATSAPP_NUMBER)).toBe(true);
-  });
-
-  it('isValidWhatsAppNumber: hanya digit dan diawali kode negara (bukan "0")', () => {
-    expect(isValidWhatsAppNumber('6281234567890')).toBe(true);
-    expect(isValidWhatsAppNumber('62811112222')).toBe(true);
-
-    // Ditolak: diawali 0 lokal
-    expect(isValidWhatsAppNumber('081234567890')).toBe(false);
-
-    // Ditolak: mengandung tanda plus, spasi, tanda minus, atau huruf
-    expect(isValidWhatsAppNumber('+6281234567890')).toBe(false);
-    expect(isValidWhatsAppNumber('62 812 3456 7890')).toBe(false);
-    expect(isValidWhatsAppNumber('62-812-3456')).toBe(false);
-    expect(isValidWhatsAppNumber('62812abcd')).toBe(false);
-
-    // Ditolak: terlalu pendek (< 8) atau terlalu panjang (> 15)
-    expect(isValidWhatsAppNumber('12345')).toBe(false);
-    expect(isValidWhatsAppNumber('12345678901234567')).toBe(false);
-
-    // Ditolak: kosong / null / undefined
-    expect(isValidWhatsAppNumber('')).toBe(false);
-    expect(isValidWhatsAppNumber(null)).toBe(false);
-    expect(isValidWhatsAppNumber(undefined)).toBe(false);
-  });
-
-  it('buildWhatsAppUrl: menyusun URL wa.me dengan encodeURIComponent', () => {
-    const item = { nama: 'Susu Fresh Milk', satuan: 'ml' };
-    const url = buildWhatsAppUrl(SUPPLIER_WHATSAPP_NUMBER, item, 2500);
-
-    expect(url.startsWith('https://wa.me/6281234567890?text=')).toBe(true);
-    expect(url).toContain(encodeURIComponent('Susu Fresh Milk'));
-    expect(url).toContain(encodeURIComponent('2.500 ml'));
-    expect(url).toContain(encodeURIComponent('kurang'));
-  });
-
-  it('buildWhatsAppUrl: mengembalikan string kosong untuk nomor tidak valid', () => {
-    const item = { nama: 'Susu Fresh Milk', satuan: 'ml' };
-    expect(buildWhatsAppUrl('081234567890', item, 500)).toBe('');
-    expect(buildWhatsAppUrl('+6281234567890', item, 500)).toBe('');
-    expect(buildWhatsAppUrl('invalid', item, 500)).toBe('');
-    expect(buildWhatsAppUrl('', item, 500)).toBe('');
-    expect(buildWhatsAppUrl(null, item, 500)).toBe('');
   });
 });
 

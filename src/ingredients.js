@@ -257,13 +257,15 @@ export function demoIngredients(today = new Date()) {
 
 /**
  * Muat bahan dari localStorage. Bila kosong / rusak / tidak valid -> data demo.
+ * @param {Date} [today] tanggal acuan untuk token relatif
+ * @param {string} [key] key penyimpanan (default STORAGE_KEY; dipakai per-seller)
  * @returns {{ items:Array, source:'storage'|'demo', error?:string }}
  */
-export function loadIngredients(today = new Date()) {
+export function loadIngredients(today = new Date(), key = STORAGE_KEY) {
   const storage = safeStorage();
   if (!storage) return { items: demoIngredients(today), source: 'demo' };
 
-  const raw = storage.getItem(STORAGE_KEY);
+  const raw = storage.getItem(key);
   if (!raw) return { items: demoIngredients(today), source: 'demo' };
 
   try {
@@ -281,14 +283,16 @@ export function loadIngredients(today = new Date()) {
 
 /**
  * Simpan bahan ke localStorage (divalidasi ulang sebelum menulis).
+ * @param {Array} items
+ * @param {string} [key] key penyimpanan (default STORAGE_KEY; dipakai per-seller)
  * @returns {{ ok:boolean, error?:string }}
  */
-export function saveIngredients(items) {
+export function saveIngredients(items, key = STORAGE_KEY) {
   const storage = safeStorage();
   if (!storage) return { ok: false, error: 'localStorage tidak tersedia pada browser ini.' };
   try {
     const clean = items.map((it) => validateIngredient(it));
-    storage.setItem(STORAGE_KEY, JSON.stringify(clean));
+    storage.setItem(key, JSON.stringify(clean));
     return { ok: true };
   } catch (err) {
     const msg = err instanceof ValidationError ? err.message : 'Gagal menyimpan (penyimpanan penuh?).';
@@ -297,11 +301,11 @@ export function saveIngredients(items) {
 }
 
 /** Hapus data tersimpan (untuk Reset Data Demo). */
-export function clearIngredients() {
+export function clearIngredients(key = STORAGE_KEY) {
   const storage = safeStorage();
   if (!storage) return { ok: false, error: 'localStorage tidak tersedia.' };
   try {
-    storage.removeItem(STORAGE_KEY);
+    storage.removeItem(key);
     return { ok: true };
   } catch {
     return { ok: false, error: 'Gagal menghapus data.' };

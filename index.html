@@ -4,110 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light" />
-    <title>TakarKopi — Smart Prep &amp; Weather-Aware Inventory</title>
+    <title>TakarKopi — Marketplace &amp; Smart Prep Bahan Baku Kafe</title>
     <meta
       name="description"
-      content="TakarKopi menghitung takaran persiapan pagi bahan baku kafe berdasarkan cuaca, kalender/event, dan peringatan kedaluwarsa."
+      content="TakarKopi menghubungkan supplier bahan baku kafe dengan pembeli, plus prediksi persiapan pagi berbasis cuaca, kalender, dan kedaluwarsa."
     />
   </head>
   <body>
-    <a class="skip-link" href="#prep">Lewati ke checklist prep</a>
-
-    <div class="app">
-      <header class="app-header">
-        <div id="hero" class="hero" aria-hidden="true"></div>
-        <div class="brand">
-          <span class="brand__logo" aria-hidden="true">☕</span>
-          <div class="brand__text">
-            <h1 class="brand__name">TakarKopi</h1>
-            <p class="brand__tagline">Smart Prep &amp; Weather Inventory</p>
-          </div>
-        </div>
-        <div class="app-header__meta">
-          <p id="today-label" class="today-label"></p>
-          <button id="btn-dashboard" class="btn btn--pink" type="button">📋 Dashboard Bahan</button>
-        </div>
-      </header>
-
-      <main class="app-main">
-        <section class="panel" aria-labelledby="triggers-title">
-          <div class="panel__head">
-            <h2 id="triggers-title" class="panel__title"><span class="panel__step">1</span> Trigger Cuaca &amp; Kalender Event</h2>
-          </div>
-          <p class="panel__note">
-            Pilih kondisi hari ini — Ringkasan Dapur dan Smart Prep Checklist diperbarui langsung
-            (real-time) tanpa perlu reload.
-          </p>
-          <div id="triggers" class="triggers"></div>
-        </section>
-
-        <section class="panel" aria-labelledby="stats-title">
-          <div class="panel__head">
-            <h2 id="stats-title" class="panel__title"><span class="panel__step">2</span> Ringkasan Dapur</h2>
-          </div>
-          <div id="stats" class="stats-grid"></div>
-        </section>
-
-        <section class="panel" id="prep" aria-labelledby="prep-title">
-          <div class="panel__head panel__head--wrap">
-            <h2 id="prep-title" class="panel__title"><span class="panel__step">3</span> Smart Prep Checklist Pagi Ini</h2>
-            <div class="prep-toolbar">
-              <label class="prep-toolbar__control">
-                <span class="visually-hidden">Filter checklist</span>
-                <select id="prep-filter" class="field__control field__control--sm">
-                  <option value="all">Filter: Semua</option>
-                  <option value="kurang">⚠️ Kurang Stok</option>
-                  <option value="kedaluwarsa">⏳ Hampir Kedaluwarsa</option>
-                  <option value="kritis">🚨 Kritis</option>
-                  <optgroup label="Kategori">
-                    <option value="Minuman Dingin">Minuman Dingin</option>
-                    <option value="Minuman Panas">Minuman Panas</option>
-                    <option value="Pastry">Pastry</option>
-                    <option value="Bahan Umum">Bahan Umum</option>
-                  </optgroup>
-                </select>
-              </label>
-              <label class="prep-toolbar__control">
-                <span class="visually-hidden">Urutkan checklist</span>
-                <select id="prep-sort" class="field__control field__control--sm">
-                  <option value="fifo">Urutkan: Paling Dekat Kedaluwarsa (FIFO)</option>
-                  <option value="shortage">Urutkan: Kekurangan Terbanyak</option>
-                  <option value="name-asc">Urutkan: Nama Bahan A–Z</option>
-                </select>
-              </label>
-              <label class="prep-toolbar__control">
-                <span class="visually-hidden">Cari bahan</span>
-                <input id="prep-search" class="field__control field__control--sm" type="search" placeholder="🔍 Cari bahan…" />
-              </label>
-            </div>
-          </div>
-          <p class="panel__note">
-            Urutan prioritas: bahan paling mendekati kedaluwarsa lebih dulu (FIFO). Tiap baris menampilkan
-            alasan perhitungan dan status stok kulkas.
-          </p>
-          <div id="checklist" class="checklist-host"></div>
-        </section>
-
-        <section class="panel" id="manage" aria-labelledby="manage-title">
-          <div class="panel__head">
-            <h2 id="manage-title" class="panel__title"><span class="panel__step">4</span> Manajemen Bahan Baku</h2>
-          </div>
-          <div id="ingredients" class="ingredients-host"></div>
-          <div id="data-actions" class="data-actions" role="group" aria-label="Backup dan pemulihan data"></div>
-        </section>
-      </main>
-
-      <footer class="app-footer">
-        <p>
-          TakarKopi · MVP Vite + Vanilla JS. Data disimpan lokal di browser
-          (<code>takarkopi:ingredients:v1</code>), tanpa backend &amp; tanpa login.
-        </p>
-        <p class="app-footer__note">
-          Simulasi faktor eksternal (cuaca &amp; kalender) — bukan integrasi API cuaca real-time.
-        </p>
-      </footer>
-    </div>
-
+    <a class="skip-link" href="#content">Lewati ke konten utama</a>
+    <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

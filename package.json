@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "TakarKopi - asisten prediksi prep & stok bahan baku kafe (cuaca + kalender)",
+  "description": "TakarKopi - marketplace bahan baku kafe dengan 3 peran (admin, seller, pembeli) + prediksi prep & stok",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
