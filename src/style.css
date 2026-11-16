@@ -375,6 +375,31 @@ code {
   background: var(--danger-bg);
 }
 
+/* Tombol aksi WhatsApp pada kartu checklist (hijau matcha, konsisten tema). */
+.btn--wa {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+}
+.btn--wa:hover {
+  background: var(--brand-strong);
+  border-color: var(--brand-strong);
+}
+.btn--wa.is-disabled,
+.btn--wa:disabled {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text-faint);
+  cursor: not-allowed;
+}
+.btn--wa.is-disabled:hover,
+.btn--wa:disabled:hover {
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+
 .btn--tiny {
   padding: 0.1rem 0.5rem;
   min-width: 1.7rem;
@@ -625,6 +650,14 @@ code {
   display: grid;
   gap: 0.4rem;
   min-width: 0;
+}
+
+/* Baris aksi (tombol restock WhatsApp) di dalam kartu checklist. */
+.checklist__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.1rem;
 }
 
 .checklist__head {

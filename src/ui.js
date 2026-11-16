@@ -16,8 +16,9 @@ import {
   sanitizeImageUrl,
   defaultImageFor,
   IMAGE_BY_ID,
+  SUPPLIER_WHATSAPP_NUMBER,
 } from './ingredients.js';
-import { expiryStatus, formatHumanDate } from './predictor.js';
+import { expiryStatus, formatHumanDate, buildWhatsAppUrl } from './predictor.js';
 
 /* ================================================================== */
 /* 1. Helper DOM                                                      */
@@ -381,6 +382,32 @@ function checklistItem(item, checked, onToggle) {
     badge,
   ]);
 
+  // Tombol restock WhatsApp: aktif bila kekurangan > 0, nonaktif bila stok cukup.
+  const waAction = cukup
+    ? el('button', {
+        className: 'btn btn--wa is-disabled',
+        textContent: 'Stok Cukup',
+        attrs: { type: 'button', disabled: 'disabled' },
+      })
+    : el(
+        'a',
+        {
+          className: 'btn btn--wa',
+          attrs: {
+            href: buildWhatsAppUrl(SUPPLIER_WHATSAPP_NUMBER, ingredient, kekurangan),
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            title: `Pesan ${fmt(kekurangan)} ${ingredient.satuan} ${ingredient.nama} ke supplier via WhatsApp`,
+          },
+        },
+        [
+          el('span', { className: 'btn__icon', textContent: '💬', attrs: { 'aria-hidden': 'true' } }),
+          el('span', { textContent: 'Pesan Restock via WhatsApp' }),
+        ],
+      );
+
+  const actions = el('div', { className: 'checklist__actions' }, [waAction]);
+
   return el(
     'li',
     { className: `checklist__item ${isDone ? 'is-done' : ''} ${cukup ? '' : 'is-short'}`, dataset: { id } },
@@ -393,6 +420,7 @@ function checklistItem(item, checked, onToggle) {
         el('div', { className: 'checklist__head' }, [title, expiryChip]),
         prepLine,
         stockLine,
+        actions,
       ]),
     ],
   );

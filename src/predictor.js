@@ -464,15 +464,16 @@ export const STATUS_FILTERS = ['all', 'kurang', 'kedaluwarsa', 'kritis'];
 
 /**
  * Filter daftar checklist berdasarkan kata kunci & filter status/kategori.
+ * Bila `sort` diberikan, hasilnya diurutkan ulang (lihat `sortChecklistItems`).
  * @param {Array} items hasil buildChecklist
- * @param {{ query?: string, filter?: string }} [opts]
+ * @param {{ query?: string, filter?: string, sort?: 'fifo'|'shortage'|'name-asc' }} [opts]
  */
 export function filterChecklist(items, opts = {}) {
   const query = String(opts.query ?? '').trim().toLowerCase();
   const filter = opts.filter ?? 'all';
   const isStatus = STATUS_FILTERS.includes(filter);
 
-  return items.filter((it) => {
+  const filtered = items.filter((it) => {
     const ing = it.ingredient;
 
     if (filter === 'kurang' && it.cukup) return false;
@@ -486,7 +487,18 @@ export function filterChecklist(items, opts = {}) {
     }
     return true;
   });
+
+  // Tanpa `sort`, urutan asli (yang sudah FIFO dari buildChecklist) dipertahankan.
+  return opts.sort ? sortChecklistItems(filtered, opts.sort) : filtered;
 }
+
+/* --- Pengurutan (sorting) ----------------------------------------- */
+
+/** Mode pengurutan yang didukung untuk daftar bahan & checklist. */
+export const SORT_MODES = ['fifo', 'shortage', 'name-asc'];
+
+/** Pembanding nama bahan A–Z (locale Indonesia). */
+const byNameId = (a, b) => String(a?.nama ?? '').localeCompare(String(b?.nama ?? ''), 'id');
 
 /** Bahan dianggap kurang stok bila stok saat ini di bawah pemakaian dasar harian. */
 export function isShortage(ingredient) {
@@ -495,24 +507,121 @@ export function isShortage(ingredient) {
   return stok < dasar;
 }
 
+/** Besar kekurangan stok (stok < pemakaian dasar) sebagai angka >= 0. */
+export function shortageAmount(ingredient) {
+  const stok = Number(ingredient?.stokSaatIni) || 0;
+  const dasar = Number(ingredient?.pemakaianDasar) || 0;
+  return Math.max(0, dasar - stok);
+}
+
+/**
+ * Urutkan daftar bahan mentah (fungsi murni, stabil).
+ *  - 'fifo'     : paling mendekati kedaluwarsa lebih dulu (default).
+ *  - 'shortage' : kekurangan stok terbanyak lebih dulu.
+ *  - 'name-asc' : nama bahan A–Z.
+ * Nilai yang tidak punya tanggal kedaluwarsa valid diletakkan di akhir (fifo).
+ * @param {Array} items
+ * @param {'fifo'|'shortage'|'name-asc'} [sort]
+ */
+export function sortIngredients(items, sort = 'fifo') {
+  const list = Array.isArray(items) ? [...items] : [];
+  switch (sort) {
+    case 'shortage':
+      return list.sort((a, b) => shortageAmount(b) - shortageAmount(a));
+    case 'name-asc':
+      return list.sort(byNameId);
+    case 'fifo':
+    default:
+      return list.sort((a, b) => {
+        const da = daysUntil(a?.tanggalKedaluwarsa);
+        const db = daysUntil(b?.tanggalKedaluwarsa);
+        const va = Number.isNaN(da) ? Infinity : da;
+        const vb = Number.isNaN(db) ? Infinity : db;
+        return va - vb;
+      });
+  }
+}
+
+/**
+ * Urutkan baris checklist (hasil buildChecklist) sesuai mode.
+ *  - 'fifo'     : prioritas kedaluwarsa + kekurangan (default, `sortChecklist`).
+ *  - 'shortage' : kekurangan stok terbanyak lebih dulu.
+ *  - 'name-asc' : nama bahan A–Z.
+ * @param {Array} items
+ * @param {'fifo'|'shortage'|'name-asc'} [sort]
+ */
+export function sortChecklistItems(items, sort = 'fifo') {
+  const list = Array.isArray(items) ? [...items] : [];
+  switch (sort) {
+    case 'shortage':
+      return list.sort((a, b) => (Number(b?.kekurangan) || 0) - (Number(a?.kekurangan) || 0));
+    case 'name-asc':
+      return list.sort((a, b) => byNameId(a?.ingredient, b?.ingredient));
+    case 'fifo':
+    default:
+      return sortChecklist(list);
+  }
+}
+
+/* --- Integrasi WhatsApp (restock supplier) ------------------------ */
+
+/**
+ * Validasi nomor WhatsApp format internasional.
+ * Hanya digit (pemisah seperti spasi/`-`/`+` diabaikan), panjang wajar 8–15 digit,
+ * tidak diawali `0` lokal, dan harus diawali kode negara (mis. `62`).
+ * @param {unknown} nomor
+ * @returns {boolean}
+ */
+export function isValidWhatsAppNumber(nomor) {
+  const digits = String(nomor ?? '').replace(/[^\d]/g, '');
+  if (digits.length < 8 || digits.length > 15) return false;
+  if (digits.startsWith('0')) return false;
+  return true;
+}
+
+/**
+ * Susun URL WhatsApp (wa.me) untuk memesan restock sebuah bahan (fungsi murni).
+ * @param {string} nomor nomor tujuan format internasional (mis. "6281234567890")
+ * @param {object} item bahan (butuh `nama`, opsional `satuan`)
+ * @param {number} kekurangan jumlah kekurangan stok
+ * @returns {string} URL `https://wa.me/<nomor>?text=<pesan>` atau '' bila nomor tidak valid.
+ */
+export function buildWhatsAppUrl(nomor, item, kekurangan) {
+  const digits = String(nomor ?? '').replace(/[^\d]/g, '');
+  if (!isValidWhatsAppNumber(digits)) return '';
+
+  const nama = String(item?.nama ?? 'bahan');
+  const satuan = item?.satuan ? ` ${item.satuan}` : '';
+  const jumlah = formatNumber(Math.max(0, Number(kekurangan) || 0));
+  const pesan =
+    `Halo, saya dari TakarKopi ingin restock bahan berikut:\n\n` +
+    `• ${nama}: kurang ${jumlah}${satuan}\n\n` +
+    `Mohon info ketersediaan & harga. Terima kasih.`;
+
+  return `https://wa.me/${digits}?text=${encodeURIComponent(pesan)}`;
+}
+
 /**
  * Saring daftar bahan baku (fungsi murni).
  * @param {Array} items daftar bahan mentah
- * @param {{ query?:string, kategori?:string, onlyShortage?:boolean }} [opts]
+ * @param {{ query?:string, kategori?:string, onlyShortage?:boolean,
+ *   sort?:'fifo'|'shortage'|'name-asc' }} [opts]
  *   - `query`   : cocokkan (case-insensitive) pada nama, kategori, atau ikon.
  *   - `kategori`: saring satu kategori; 'all'/'semua'/kosong = tanpa filter.
  *   - `onlyShortage`: true = hanya bahan yang stoknya kurang (stok < pemakaian dasar).
- * @returns {Array} daftar bahan yang lolos filter
+ *   - `sort`    : urutkan hasil — 'fifo' (default), 'shortage', atau 'name-asc'.
+ * @returns {Array} daftar bahan yang lolos filter (sudah diurutkan)
  */
 export function filterIngredients(items, opts = {}) {
   const list = Array.isArray(items) ? items : [];
   const query = String(opts.query ?? '').trim().toLowerCase();
   const kategori = String(opts.kategori ?? '').trim();
   const onlyShortage = Boolean(opts.onlyShortage);
+  const sort = opts.sort ?? 'fifo';
   const kategoriAktif =
     kategori !== '' && !['all', 'semua'].includes(kategori.toLowerCase());
 
-  return list.filter((ing) => {
+  const filtered = list.filter((ing) => {
     if (!ing) return false;
     if (kategoriAktif && ing.kategori !== kategori) return false;
     if (onlyShortage && !isShortage(ing)) return false;
@@ -523,4 +632,6 @@ export function filterIngredients(items, opts = {}) {
     }
     return true;
   });
+
+  return sortIngredients(filtered, sort);
 }

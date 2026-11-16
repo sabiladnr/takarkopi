@@ -58,6 +58,7 @@ const state = {
   checked: new Set(),
   query: '',
   filter: 'all',
+  sort: 'fifo',
 };
 
 const dom = {
@@ -69,6 +70,7 @@ const dom = {
   dataActions: must('#data-actions'),
   todayLabel: must('#today-label'),
   prepFilter: must('#prep-filter'),
+  prepSort: must('#prep-sort'),
   prepSearch: must('#prep-search'),
   dashboardBtn: must('#btn-dashboard'),
 };
@@ -113,7 +115,7 @@ function renderTriggersSection() {
 function renderChecklistSection() {
   const { items } = currentChecklist();
   renderChecklist(dom.checklist, {
-    items: filterChecklist(items, { query: state.query, filter: state.filter }),
+    items: filterChecklist(items, { query: state.query, filter: state.filter, sort: state.sort }),
     allItems: items,
     checked: state.checked,
     onToggle: handleToggle,
@@ -288,6 +290,12 @@ function wireEvents() {
   dom.prepFilter.value = state.filter;
   dom.prepFilter.addEventListener('change', () => {
     state.filter = dom.prepFilter.value;
+    renderChecklistSection();
+  });
+
+  dom.prepSort.value = state.sort;
+  dom.prepSort.addEventListener('change', () => {
+    state.sort = dom.prepSort.value;
     renderChecklistSection();
   });
 

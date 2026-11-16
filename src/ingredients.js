@@ -26,6 +26,12 @@ export const SATUAN = ['ml', 'gram', 'pcs', 'kg', 'liter'];
 export const STORAGE_KEY = 'takarkopi:ingredients:v1';
 
 /**
+ * Nomor WhatsApp supplier untuk restock (format internasional, tanpa "+").
+ * Dipakai tombol "Pesan Restock via WhatsApp" pada Smart Prep Checklist.
+ */
+export const SUPPLIER_WHATSAPP_NUMBER = '6281234567890';
+
+/**
  * Data demo 8 bahan baku kafe.
  * `tanggalKedaluwarsa` memakai token relatif (`@+2`) dan diresolusi saat load
  * agar demo selalu menampilkan status kedaluwarsa yang relevan.
