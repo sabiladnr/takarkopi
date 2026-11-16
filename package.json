@@ -1,0 +1,17 @@
+{
+  "name": "takarkopi",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "TakarKopi - asisten prediksi prep & stok bahan baku kafe (cuaca + kalender)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10",
+    "vitest": "^4.1.12"
+  }
+}

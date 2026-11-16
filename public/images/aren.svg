@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Sirup gula aren">
+  <rect width="96" height="96" rx="20" fill="#E3F2EA"/>
+  <rect x="36" y="16" width="24" height="10" rx="4" fill="#D64572"/>
+  <path d="M32 26h32v44a6 6 0 0 1-6 6H38a6 6 0 0 1-6-6z" fill="#FFFFFF" stroke="#2D6A4F" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="38" y="38" width="20" height="26" rx="5" fill="#B07A4A"/>
+  <path d="M38 46h20" stroke="#8A5A32" stroke-width="2"/>
+</svg>

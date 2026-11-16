@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustrasi suasana kafe TakarKopi">
+  <defs>
+    <linearGradient id="tk-hero" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E3F2EA"/>
+      <stop offset="1" stop-color="#FDECEF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="320" fill="url(#tk-hero)"/>
+  <circle cx="180" cy="80" r="64" fill="#FFFFFF" opacity="0.55"/>
+  <circle cx="1040" cy="70" r="90" fill="#FFFFFF" opacity="0.45"/>
+  <circle cx="620" cy="40" r="46" fill="#FFFFFF" opacity="0.4"/>
+
+  <g stroke="#2D6A4F" stroke-width="4">
+    <line x1="300" y1="0" x2="300" y2="60"/>
+    <line x1="900" y1="0" x2="900" y2="60"/>
+  </g>
+  <path d="M278 60h44l-8 22h-28z" fill="#D64572"/>
+  <path d="M878 60h44l-8 22h-28z" fill="#2D6A4F"/>
+
+  <rect x="120" y="96" width="180" height="96" rx="12" fill="#FFFFFF" stroke="#2D6A4F" stroke-width="4"/>
+  <path d="M140 124h140M140 144h110M140 164h90" stroke="#8FCBA9" stroke-width="6" stroke-linecap="round"/>
+
+  <g>
+    <path d="M980 180c-30-6-46-34-40-64 30 4 48 30 40 64z" fill="#2D6A4F"/>
+    <path d="M1004 180c26-8 38-34 32-62-28 4-44 28-32 62z" fill="#52B788"/>
+    <path d="M972 180h60l-8 56h-44z" fill="#D64572"/>
+  </g>
+
+  <rect x="0" y="236" width="1200" height="84" fill="#2D6A4F"/>
+  <rect x="0" y="236" width="1200" height="14" fill="#1F4E39"/>
+
+  <g>
+    <path d="M470 186h96v40a30 30 0 0 1-30 30h-36a30 30 0 0 1-30-30z" fill="#FFFFFF" stroke="#2D6A4F" stroke-width="5"/>
+    <path d="M566 194h16a16 16 0 0 1 0 32h-16" fill="none" stroke="#2D6A4F" stroke-width="5"/>
+    <path d="M490 186h56v8h-56z" fill="#FDECEF"/>
+    <path d="M500 150c0 8-8 8-8 16M520 142c0 8-8 8-8 16M540 150c0 8-8 8-8 16" fill="none" stroke="#D64572" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g>
+    <rect x="660" y="196" width="70" height="60" rx="10" fill="#FFFFFF" stroke="#2D6A4F" stroke-width="5"/>
+    <rect x="672" y="208" width="46" height="26" rx="6" fill="#FDECEF"/>
+    <circle cx="695" cy="221" r="7" fill="#D64572"/>
+  </g>
+
+  <g fill="#2D6A4F">
+    <ellipse cx="200" cy="256" rx="14" ry="10" transform="rotate(-20 200 256)"/>
+    <ellipse cx="240" cy="272" rx="14" ry="10" transform="rotate(15 240 272)"/>
+    <ellipse cx="1000" cy="262" rx="14" ry="10" transform="rotate(25 1000 262)"/>
+  </g>
+</svg>
