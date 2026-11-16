@@ -32,6 +32,9 @@ import {
   ValidationError,
   STORAGE_KEY,
   sanitizeImageUrl,
+  defaultImageFor,
+  withDefaultImages,
+  IMAGE_BY_ID,
 } from '../src/ingredients.js';
 
 const TODAY = new Date(2026, 10, 16); // 16 Nov 2026
@@ -463,5 +466,49 @@ describe('sanitizeImageUrl — hanya path ./images/... atau https://', () => {
     const urls = demo.map((d) => d.imageUrl);
     expect(urls.every((u) => sanitizeImageUrl(u) === u)).toBe(true);
     expect(new Set(urls).size).toBe(8);
+  });
+});
+
+/* ================================================================== */
+/* 7. Gambar default bahan & backfill data lama                       */
+/* ================================================================== */
+
+describe('gambar default bahan (defaultImageFor & withDefaultImages)', () => {
+  it('memetakan 8 id demo ke path ./images/... yang benar', () => {
+    expect(Object.keys(IMAGE_BY_ID)).toHaveLength(8);
+    expect(defaultImageFor({ id: 'ing-01' })).toBe('./images/milk.svg');
+    expect(defaultImageFor({ id: 'ing-04' })).toBe('./images/ice.svg');
+    expect(defaultImageFor({ id: 'ing-08' })).toBe('./images/matcha.svg');
+  });
+
+  it('fallback ke kategori bila id tidak dikenal', () => {
+    expect(defaultImageFor({ id: 'x', kategori: 'Pastry' })).toBe('./images/croissant.svg');
+    expect(defaultImageFor({ id: 'x', kategori: 'Minuman Panas' })).toBe('./images/coffee.svg');
+    expect(defaultImageFor({ id: 'x', kategori: 'Bahan Umum' })).toBe('./images/syrup.svg');
+  });
+
+  it('mengembalikan string kosong untuk input tak dikenal', () => {
+    expect(defaultImageFor({})).toBe('');
+    expect(defaultImageFor(null)).toBe('');
+    expect(defaultImageFor({ kategori: 'Entah' })).toBe('');
+  });
+
+  it('withDefaultImages hanya melengkapi yang masih kosong', () => {
+    const items = withDefaultImages([
+      { id: 'ing-03', kategori: 'Bahan Umum', imageUrl: '' },
+      { id: 'ing-06', kategori: 'Pastry', imageUrl: 'https://example.com/x.png' },
+    ]);
+    expect(items[0].imageUrl).toBe('./images/syrup.svg');
+    expect(items[1].imageUrl).toBe('https://example.com/x.png');
+  });
+
+  it('loadIngredients melengkapi data lama tanpa imageUrl dari localStorage', () => {
+    vi.stubGlobal(
+      'localStorage',
+      makeStorage({ [STORAGE_KEY]: JSON.stringify([{ ...validRow(), id: 'ing-05' }]) }),
+    );
+    const res = loadIngredients(TODAY);
+    expect(res.source).toBe('storage');
+    expect(res.items[0].imageUrl).toBe('./images/coffee.svg');
   });
 });

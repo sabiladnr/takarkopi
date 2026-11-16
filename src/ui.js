@@ -14,6 +14,8 @@ import {
   nextId,
   parseImport,
   sanitizeImageUrl,
+  defaultImageFor,
+  IMAGE_BY_ID,
 } from './ingredients.js';
 import { expiryStatus, formatHumanDate } from './predictor.js';
 
@@ -88,36 +90,44 @@ export function fmt(n) {
 
 /**
  * Buat elemen visual bahan: thumbnail `<img>` bila `imageUrl` aman, atau
- * fallback emoji. Bila gambar gagal dimuat, otomatis diganti emoji.
+ * fallback emoji. Bila gambar gagal dimuat, otomatis diganti gambar default;
+ * bila gambar default juga gagal, baru memakai emoji.
  * @param {object} ingredient
- * @param {string} fallbackClass kelas untuk fallback emoji
+ * @param {{ imgClass?:string, fallbackClass?:string }} [opts]
  */
-export function ingredientVisual(ingredient, fallbackClass = 'ingredient-emoji') {
+export function ingredientVisual(ingredient, opts = {}) {
+  const imgClass = typeof opts === 'string' ? opts : opts.imgClass || 'ingredient-thumb';
+  const fallbackClass = typeof opts === 'string' ? 'ingredient-emoji' : opts.fallbackClass || 'ingredient-emoji';
   const emoji = ingredient?.ikon || '📦';
-  const makeFallback = () =>
+  const makeEmoji = () =>
     el('span', { className: fallbackClass, textContent: emoji, attrs: { 'aria-hidden': 'true' } });
 
   // Sanitasi ulang di lapisan tampilan (pertahanan berlapis).
-  const url = sanitizeImageUrl(ingredient?.imageUrl);
-  if (!url) return makeFallback();
+  const primary = sanitizeImageUrl(ingredient?.imageUrl);
+  const defaultUrl = defaultImageFor(ingredient);
+  const startUrl = primary || defaultUrl;
+  if (!startUrl) return makeEmoji();
 
+  let triedDefault = !primary; // bila sudah memakai default, tak perlu dicoba lagi
   const img = el('img', {
-    className: 'ingredient-thumb',
+    className: imgClass,
     attrs: {
-      src: url,
+      src: startUrl,
       alt: ingredient?.nama ? `Ilustrasi ${ingredient.nama}` : '',
       loading: 'lazy',
       decoding: 'async',
     },
   });
-  img.addEventListener(
-    'error',
-    () => {
-      const fb = makeFallback();
-      if (img.parentNode) img.parentNode.replaceChild(fb, img);
-    },
-    { once: true },
-  );
+  img.addEventListener('error', () => {
+    // 1) Coba gambar default; 2) bila tetap gagal, pakai emoji.
+    if (!triedDefault && defaultUrl && defaultUrl !== startUrl) {
+      triedDefault = true;
+      img.setAttribute('src', defaultUrl);
+      return;
+    }
+    const fb = makeEmoji();
+    if (img.parentNode) img.parentNode.replaceChild(fb, img);
+  });
   return img;
 }
 
@@ -341,7 +351,6 @@ function checklistItem(item, checked, onToggle) {
   checkbox.addEventListener('change', () => onToggle(id, checkbox.checked));
 
   const title = el('label', { className: 'checklist__title', attrs: { for: `prep-${id}` } }, [
-    ingredientVisual(ingredient, 'checklist__emoji'),
     el('span', { className: 'checklist__name', textContent: ingredient.nama }),
     el('span', { className: 'checklist__kategori', textContent: `(${ingredient.kategori})` }),
   ]);
@@ -375,11 +384,17 @@ function checklistItem(item, checked, onToggle) {
   return el(
     'li',
     { className: `checklist__item ${isDone ? 'is-done' : ''} ${cukup ? '' : 'is-short'}`, dataset: { id } },
-    [checkbox, el('div', { className: 'checklist__main' }, [
-      el('div', { className: 'checklist__head' }, [title, expiryChip]),
-      prepLine,
-      stockLine,
-    ])],
+    [
+      checkbox,
+      el('div', { className: 'checklist__thumb' }, [
+        ingredientVisual(ingredient, { imgClass: 'item-thumb', fallbackClass: 'checklist__emoji' }),
+      ]),
+      el('div', { className: 'checklist__main' }, [
+        el('div', { className: 'checklist__head' }, [title, expiryChip]),
+        prepLine,
+        stockLine,
+      ]),
+    ],
   );
 }
 
@@ -434,7 +449,7 @@ function ingredientRow(ing, { onEdit, onDelete, onAdjustStock }) {
   return el('tr', { dataset: { id: ing.id } }, [
     el('td', { dataset: { label: 'Bahan' } }, [
       el('div', { className: 'cell-ingredient' }, [
-        ingredientVisual(ing, 'cell-ingredient__emoji'),
+        ingredientVisual(ing, { imgClass: 'ingredient-thumb', fallbackClass: 'cell-ingredient__emoji' }),
         el('span', { className: 'cell-ingredient__name', textContent: ing.nama }),
       ]),
     ]),
@@ -484,6 +499,10 @@ export function openIngredientForm({ title, initial = null, existingIds = [], on
     pemakaianDasar: fieldInput('number', 'Pemakaian dasar harian', { min: '0.01', step: '0.01' }),
     tanggalKedaluwarsa: fieldInput('date', 'Tanggal kedaluwarsa'),
     ikon: fieldInput('text', 'Ikon (emoji)', { maxlength: '8', placeholder: '🥛' }),
+    imageUrl: fieldInput('text', 'URL gambar (opsional)', {
+      placeholder: './images/milk.svg atau https://…',
+      maxlength: '300',
+    }),
   };
 
   if (initial) {
@@ -494,6 +513,7 @@ export function openIngredientForm({ title, initial = null, existingIds = [], on
     fields.pemakaianDasar.control.value = String(initial.pemakaianDasar ?? '');
     fields.tanggalKedaluwarsa.control.value = initial.tanggalKedaluwarsa ?? '';
     fields.ikon.control.value = initial.ikon ?? '';
+    fields.imageUrl.control.value = initial.imageUrl ?? '';
   } else {
     fields.kategori.control.value = KATEGORI[0];
   }
@@ -519,9 +539,34 @@ export function openIngredientForm({ title, initial = null, existingIds = [], on
 
   const generalError = el('p', { className: 'form-error', attrs: { role: 'alert' } });
 
+  // Pilih gambar preset (8 ilustrasi lokal) untuk mengisi `imageUrl`.
+  const presetImages = [...new Set(Object.values(IMAGE_BY_ID))];
+  const imageBar = el(
+    'div',
+    { className: 'image-bar' },
+    presetImages.map((src) =>
+      el(
+        'button',
+        {
+          className: 'image-bar__btn',
+          attrs: { type: 'button', title: src, 'aria-label': `Gunakan gambar ${src}` },
+          onClick: () => {
+            fields.imageUrl.control.value = src;
+            fields.imageUrl.control.focus();
+          },
+        },
+        [el('img', { className: 'image-bar__img', attrs: { src, alt: '', loading: 'lazy' } })],
+      ),
+    ),
+  );
+
   const form = el('form', { className: 'modal__form', attrs: { novalidate: 'novalidate' } }, [
     el('div', { className: 'field-grid' }, rows),
     el('div', { className: 'field' }, [el('span', { className: 'field__label', textContent: 'Pilih ikon cepat' }), emojiBar]),
+    el('div', { className: 'field' }, [
+      el('span', { className: 'field__label', textContent: 'Pilih gambar preset (opsional)' }),
+      imageBar,
+    ]),
     generalError,
     el('div', { className: 'modal__actions' }, [
       el('button', { className: 'btn btn--ghost', textContent: 'Batal', attrs: { type: 'button' }, onClick: () => close() }),
@@ -547,6 +592,15 @@ export function openIngredientForm({ title, initial = null, existingIds = [], on
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     clearErrors();
+
+    // Validasi URL gambar: hanya "./images/..." atau "https://".
+    const imageUrlRaw = fields.imageUrl.control.value.trim();
+    if (imageUrlRaw !== '' && sanitizeImageUrl(imageUrlRaw) === '') {
+      errorSlots.imageUrl.textContent = 'URL gambar harus diawali "./images/" atau "https://".';
+      fields.imageUrl.control.focus();
+      return;
+    }
+
     const raw = {
       id: isEdit ? initial.id : nextId(existingIds.map((id) => ({ id }))),
       nama: fields.nama.control.value,
@@ -556,8 +610,7 @@ export function openIngredientForm({ title, initial = null, existingIds = [], on
       pemakaianDasar: fields.pemakaianDasar.control.value,
       tanggalKedaluwarsa: fields.tanggalKedaluwarsa.control.value,
       ikon: fields.ikon.control.value,
-      // Pertahankan gambar lama saat edit (tidak diubah lewat form ini).
-      imageUrl: initial?.imageUrl ?? '',
+      imageUrl: fields.imageUrl.control.value,
     };
 
     try {

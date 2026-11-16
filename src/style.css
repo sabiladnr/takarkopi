@@ -546,8 +546,9 @@ code {
 
 .checklist__item {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto auto 1fr;
   gap: 0.8rem;
+  align-items: start;
   padding: 0.85rem 0.95rem;
   border: 1px solid var(--border);
   border-left: 5px solid var(--border-strong);
@@ -572,9 +573,52 @@ code {
 .checklist__checkbox {
   width: 1.35rem;
   height: 1.35rem;
-  margin-top: 0.15rem;
+  margin-top: 0.75rem;
   accent-color: var(--brand);
   cursor: pointer;
+}
+
+/* Blok thumbnail ilustrasi bahan di sisi kiri tiap baris checklist. */
+.checklist__thumb {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+}
+
+/* Thumbnail checklist: 68×68 (mobile 54×54), frame krem + border lembut. */
+.item-thumb {
+  width: 68px;
+  height: 68px;
+  flex: none;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #f5f9f6;
+  border: 1px solid #dcebe3;
+}
+
+.checklist__thumb .checklist__emoji {
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  font-size: 2rem;
+  border-radius: 12px;
+  background: #f5f9f6;
+  border: 1px solid #dcebe3;
+}
+
+@media (max-width: 480px) {
+  .item-thumb {
+    width: 54px;
+    height: 54px;
+    border-radius: 10px;
+  }
+  .checklist__thumb .checklist__emoji {
+    width: 54px;
+    height: 54px;
+    font-size: 1.6rem;
+    border-radius: 10px;
+  }
 }
 
 .checklist__main {
@@ -797,11 +841,6 @@ code {
   background: var(--surface-2);
 }
 
-.checklist__item .ingredient-thumb {
-  width: 1.9rem;
-  height: 1.9rem;
-}
-
 .cell-ingredient .ingredient-thumb {
   width: 1.75rem;
   height: 1.75rem;
@@ -1008,6 +1047,34 @@ code {
 .emoji-bar__btn:hover {
   border-color: var(--brand);
   background: var(--brand-soft);
+}
+
+/* Pemilih gambar preset di form bahan. */
+.image-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.image-bar__btn {
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: #f5f9f6;
+  cursor: pointer;
+  overflow: hidden;
+}
+.image-bar__btn:hover {
+  border-color: var(--pink);
+  box-shadow: 0 0 0 2px var(--pink-soft);
+}
+.image-bar__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .confirm__message {

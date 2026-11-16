@@ -324,6 +324,9 @@ function boot() {
     } else {
       toast('Data demo TakarKopi dimuat (8 bahan baku).', { type: 'info' });
     }
+  } else if (loaded.backfilled) {
+    // Data lama tanpa imageUrl sudah dilengkapi gambar default — simpan kembali.
+    saveIngredients(state.items);
   }
 
   const today = new Date();

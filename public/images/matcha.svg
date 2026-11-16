@@ -1,7 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Matcha powder">
-  <rect width="96" height="96" rx="20" fill="#FDECEF"/>
-  <path d="M22 46h52c0 17-12 28-26 28S22 63 22 46z" fill="#FFFFFF" stroke="#2D6A4F" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M22 46h52" stroke="#2D6A4F" stroke-width="3"/>
-  <ellipse cx="48" cy="46" rx="26" ry="6" fill="#8FCBA9"/>
-  <path d="M48 14v12M39 20l5 8M57 20l-5 8" fill="none" stroke="#2D6A4F" stroke-width="2.5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Mangkuk dan bubuk matcha">
+  <defs>
+    <linearGradient id="matBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E3F2EA"/>
+      <stop offset="1" stop-color="#FDECEF"/>
+    </linearGradient>
+    <linearGradient id="matBowl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E4F0E9"/>
+    </linearGradient>
+    <linearGradient id="matTea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#74C69D"/>
+      <stop offset="1" stop-color="#40916C"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="24" fill="url(#matBg)"/>
+  <ellipse cx="64" cy="108" rx="38" ry="7" fill="#2D6A4F" opacity="0.14"/>
+  <path d="M24 62h80c0 26-18 42-40 42S24 88 24 62z" fill="url(#matBowl)" stroke="#2D6A4F" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M24 62h80" stroke="#2D6A4F" stroke-width="4"/>
+  <ellipse cx="64" cy="62" rx="40" ry="9" fill="url(#matTea)"/>
+  <ellipse cx="52" cy="60" rx="10" ry="3.5" fill="#D8F3DC" opacity="0.85"/>
+  <path d="M92 22l-8 22" stroke="#C89F7B" stroke-width="5" stroke-linecap="round"/>
+  <path d="M84 44c-2 6 2 10 6 10s8-4 6-10" fill="none" stroke="#E9D5B5" stroke-width="3"/>
+  <path d="M86 44l-3 8M90 45l-1 9M94 45l1 9M98 44l3 8" stroke="#E9D5B5" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M30 96c0-6 10-9 16-9s16 3 16 9z" fill="#74C69D"/>
+  <circle cx="40" cy="90" r="2" fill="#40916C"/>
+  <circle cx="50" cy="92" r="2" fill="#40916C"/>
+  <path d="M36 34c0 5-5 5-5 10M46 30c0 5-5 5-5 10" fill="none" stroke="#D64572" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
 </svg>

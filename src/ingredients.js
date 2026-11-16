@@ -45,6 +45,52 @@ export const DEMO_INGREDIENTS = [
 /* 2. Validasi                                                        */
 /* ================================================================== */
 
+/**
+ * Peta gambar default per id bahan demo.
+ * Dipakai untuk melengkapi data lama yang belum punya `imageUrl`.
+ */
+export const IMAGE_BY_ID = {
+  'ing-01': './images/milk.svg',
+  'ing-02': './images/uht.svg',
+  'ing-03': './images/syrup.svg',
+  'ing-04': './images/ice.svg',
+  'ing-05': './images/coffee.svg',
+  'ing-06': './images/croissant.svg',
+  'ing-07': './images/aren.svg',
+  'ing-08': './images/matcha.svg',
+};
+
+/** Peta gambar default per kategori (cadangan bila id tidak dikenal). */
+export const IMAGE_BY_KATEGORI = {
+  'Minuman Dingin': './images/milk.svg',
+  'Minuman Panas': './images/coffee.svg',
+  Pastry: './images/croissant.svg',
+  'Bahan Umum': './images/syrup.svg',
+};
+
+/**
+ * Gambar default untuk sebuah bahan: utamakan kecocokan `id`, lalu `kategori`.
+ * @param {object} ingredient
+ * @returns {string} path gambar default, atau '' bila tidak ada.
+ */
+export function defaultImageFor(ingredient) {
+  if (!ingredient) return '';
+  const byId = IMAGE_BY_ID[ingredient.id];
+  if (byId) return byId;
+  return IMAGE_BY_KATEGORI[ingredient.kategori] ?? '';
+}
+
+/**
+ * Lengkapi `imageUrl` yang kosong dengan gambar default (berdasarkan id/kategori).
+ * Data yang sudah punya `imageUrl` tidak diubah.
+ * @param {Array} items
+ * @returns {Array}
+ */
+export function withDefaultImages(items) {
+  const list = Array.isArray(items) ? items : [];
+  return list.map((it) => (it && !it.imageUrl ? { ...it, imageUrl: defaultImageFor(it) } : it));
+}
+
 export class ValidationError extends Error {
   /** @param {Record<string,string>} fields peta field -> pesan error */
   constructor(fields, message = 'Data tidak valid.') {
@@ -216,7 +262,11 @@ export function loadIngredients(today = new Date()) {
 
   try {
     const parsed = JSON.parse(raw); // dibungkus try/catch sesuai spesifikasi
-    return { items: validateImportPayload(parsed), source: 'storage' };
+    const validated = validateImportPayload(parsed);
+    // Data lama tanpa `imageUrl` otomatis dilengkapi gambar default (id/kategori).
+    const items = withDefaultImages(validated);
+    const backfilled = items.some((it, i) => it !== validated[i]);
+    return { items, source: 'storage', backfilled };
   } catch (err) {
     const msg = err instanceof ValidationError ? err.message : 'bukan JSON valid / rusak.';
     return { items: demoIngredients(today), source: 'demo', error: msg };
@@ -287,15 +337,17 @@ export function parseImport(text) {
 /* 4. CRUD & stok                                                     */
 /* ================================================================== */
 
-/** Tambah bahan baru (divalidasi). */
+/** Tambah bahan baru (divalidasi, gambar default otomatis bila kosong). */
 export function addIngredient(items, values) {
-  const item = validateIngredient({ ...values, id: values?.id || nextId(items) });
+  const base = validateIngredient({ ...values, id: values?.id || nextId(items) });
+  const item = base.imageUrl ? base : { ...base, imageUrl: defaultImageFor(base) };
   return { items: [...items, item], item };
 }
 
-/** Perbarui bahan berdasarkan id (divalidasi). */
+/** Perbarui bahan berdasarkan id (divalidasi, gambar default otomatis bila kosong). */
 export function updateIngredient(items, id, values) {
-  const item = validateIngredient({ ...values, id });
+  const base = validateIngredient({ ...values, id });
+  const item = base.imageUrl ? base : { ...base, imageUrl: defaultImageFor(base) };
   return { items: items.map((it) => (it.id === id ? item : it)), item };
 }
 

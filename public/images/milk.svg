@@ -1,7 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Susu segar">
-  <rect width="96" height="96" rx="20" fill="#E3F2EA"/>
-  <path d="M38 18h20l6 14v42a6 6 0 0 1-6 6H38a6 6 0 0 1-6-6V32z" fill="#FFFFFF" stroke="#2D6A4F" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M32 34h32v12H32z" fill="#D64572" opacity="0.9"/>
-  <path d="M38 18h20l2 6H36z" fill="#2D6A4F"/>
-  <circle cx="48" cy="60" r="9" fill="#FDECEF" stroke="#D64572" stroke-width="3"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Susu segar">
+  <defs>
+    <linearGradient id="milkBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E3F2EA"/>
+      <stop offset="1" stop-color="#FDECEF"/>
+    </linearGradient>
+    <linearGradient id="milkGlass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E4F0E9"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="24" fill="url(#milkBg)"/>
+  <ellipse cx="64" cy="110" rx="33" ry="6" fill="#2D6A4F" opacity="0.14"/>
+  <path d="M42 32h44l-6 68a11 11 0 0 1-11 10H59a11 11 0 0 1-11-10z" fill="url(#milkGlass)" stroke="#2D6A4F" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M48 56h32l-4 42a7 7 0 0 1-7 6H59a7 7 0 0 1-7-6z" fill="#FFFFFF"/>
+  <path d="M48 56h32" stroke="#2D6A4F" stroke-width="3" stroke-linecap="round"/>
+  <rect x="51" y="68" width="26" height="18" rx="6" fill="#D64572"/>
+  <circle cx="64" cy="77" r="4.5" fill="#FDECEF"/>
+  <path d="M54 40v46" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+  <path d="M76 44v10" stroke="#74C69D" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
 </svg>
